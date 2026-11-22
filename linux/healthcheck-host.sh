@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# healthcheck-host.sh — checagem rápida de um host Linux com Docker.
+# healthcheck-host.sh - checagem rápida de um host Linux com Docker.
 #
 # Verifica: uso de disco, memória, load, containers parados/unhealthy/reiniciando,
 # units do systemd com falha e build cache do Docker acumulado.
@@ -108,7 +108,7 @@ if [[ "$OUTPUT" == "json" ]]; then
   done
   printf ']}\n'
 else
-  echo "[$label] $(hostname) — $(date '+%F %T')"
+  echo "[$label] $(hostname) - $(date '+%F %T')"
   for f in "${findings[@]}"; do echo "  - $f"; done
 fi
 

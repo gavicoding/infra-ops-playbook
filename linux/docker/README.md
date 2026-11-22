@@ -1,4 +1,4 @@
-# daemon.json — tirar o Docker das faixas 172.16.0.0/12
+# daemon.json - tirar o Docker das faixas 172.16.0.0/12
 
 **Sintoma:** de dentro de um container (ou até do próprio host), equipamentos de algumas
 filiais não respondiam, enquanto outros endereços privados da mesma rede respondiam normalmente.
@@ -19,7 +19,7 @@ ip route | grep -E 'docker|br-'
 sudo install -m 0644 daemon.json /etc/docker/daemon.json
 sudo systemctl restart docker
 
-# 3. containers SEM restart policy não voltam sozinhos — listar e religar
+# 3. containers SEM restart policy não voltam sozinhos - listar e religar
 docker ps -a --filter status=exited --format '{{.Names}}' \
   | xargs -r -n1 sh -c 'docker inspect -f "{{.Name}} {{.HostConfig.RestartPolicy.Name}}" "$0"'
 ```

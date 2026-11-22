@@ -95,4 +95,4 @@ Every Pull Request and push is automatically checked across:
 
 ## License
 
-[MIT License](LICENSE) — Copyright (c) 2026 Gabriel Souza (`@gavicoding`).
+[MIT License](LICENSE) - Copyright (c) 2026 Gabriel Souza (`@gavicoding`).

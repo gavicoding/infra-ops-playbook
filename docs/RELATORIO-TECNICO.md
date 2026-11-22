@@ -1,4 +1,4 @@
-# Relatório técnico — Infraestrutura, DevOps e Automação
+# Relatório técnico - Infraestrutura, DevOps e Automação
 
 > Documento 100% anonimizado. Todos os nomes de empresa, sistemas internos, ERP,
 > hosts, IPs, portas de produção, usuários e credenciais foram substituídos por
