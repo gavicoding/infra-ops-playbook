@@ -1,58 +1,69 @@
-# infra-ops-playbook
+**🇺🇸 English** | [🇧🇷 Português](README.pt-BR.md)
 
-Infraestrutura híbrida (Linux + Windows/AD + Docker), observabilidade e automação
-operacional em um ambiente real de varejo multi-filial: ~80 filiais, um CD, ~400 estações,
-ERP com SQL Server central, robôs Windows e ITSM open source.
+# 🛠️ infra-ops-playbook
 
-Este repositório reúne **casos reais anonimizados** (problema → diagnóstico → correção →
-resultado) e **scripts/templates reutilizáveis** derivados do que foi usado em produção.
-Nenhum nome, IP, domínio ou credencial real aparece aqui.
+[![Lint CI](https://github.com/gavicoding/infra-ops-playbook/actions/workflows/lint.yml/badge.svg)](https://github.com/gavicoding/infra-ops-playbook/actions/workflows/lint.yml)
+[![Linux / Bash](https://img.shields.io/badge/Linux-Bash-4EAA25.svg)](linux/)
+[![PowerShell](https://img.shields.io/badge/Windows-PowerShell-5391FE.svg)](windows/)
+[![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](templates/docker-compose.yml)
+[![Nginx mTLS](https://img.shields.io/badge/Nginx-mTLS-009639.svg)](templates/nginx/mtls.conf)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## Destaques
+Hybrid infrastructure (**Linux + Windows/AD + Docker + Nginx mTLS**), observability, and operational automation playbook derived from a multi-branch retail environment (~80 branches, a distribution center, ~400 Windows workstations, central SQL Server ERP, automation bots, and open-source ITSM).
 
-| Caso | Antes → Depois |
-|---|---|
-| Plataforma de monitoramento de filas de replicação e infra | trava descoberta pela reclamação da filial → detectada em ~5 min; 80+ e-mails/dia → resumos de hora em hora; TTFB do dashboard 6,8 s → 0,1 s |
-| Agente de endpoint Windows + painel com mTLS | rollout em ondas com rollback e *kill switch*; reconexão após restart do servidor 60 s → 3–7 s |
-| Falha em massa de serviços Windows ("Acesso negado" até para SYSTEM) | causa raiz: flags de herança do `icacls` aplicadas a **arquivo** = DACL vazia → auto-cura + ferramenta de reinstalação limpa (~40 s de downtime) |
-| Retransmissão fiscal em contingência | rotina manual 3–4×/dia → robô contínuo com salvaguardas de RPA e chamado automático ao fornecedor |
-| Contas de acesso de fornecedor no AD | sempre habilitadas → só na janela autorizada (`logonHours`, expiração, *logoff* em RDS), com DKIM/SPF/DMARC e antivírus nos anexos |
-| Fila de notificações da ITSM | 7 semanas sem e-mail e 109 mil chamados parados → fila normalizada e backlog encerrado sem disparo em massa |
+This repository curates **100% anonymized production case studies** (symptom → root cause → fix → measurable impact) alongside **reusable, linted scripts and deployment templates**. No real company names, IPs, domains, or credentials appear anywhere.
 
-O relatório completo, com stack, inventário de projetos e 24 casos de troubleshooting, está em
-[docs/RELATORIO-TECNICO.md](docs/RELATORIO-TECNICO.md).
+---
 
-## Conteúdo
+## Real-World Operational Impact
 
-```
+| Case | Before → After |
+| :--- | :--- |
+| **Replication & Infrastructure Observability Platform** | Stalled syncs discovered via store complaints → detected in **~5 min**; `80+` emails/day → hourly batched digests; dashboard TTFB **`6.8s → 0.1s`** |
+| **Windows Fleet Agent + Central mTLS Control Plane** | Wave-based rollout with rollback & kill switch; post-restart fleet reconnection **`60s → 3–7s`** |
+| **Mass Windows Service Failures ("Access Denied" even for `SYSTEM`)** | Root cause: `icacls` inheritance flags applied to **files** yielded empty DACLs → self-healing recovery + clean out-of-tree reinstall (~40s downtime) |
+| **Fiscal Contingency Retransmission Automation** | Manual `3–4x/day` interventions → continuous RPA workflow with safety guardrails and automated vendor ticketing |
+| **Time-Boxed Vendor Access in Active Directory** | Permanently enabled vendor accounts → restricted strictly to approved windows (`logonHours`, account expiration, RDS session logoff), backed by DKIM/SPF/DMARC & ClamAV attachment scanning |
+| **ITSM Notification Queue Recovery** | 7 weeks with zero outbound notifications & 109k stalled tickets → queue normalized and backlog drained without email flooding |
+
+Read the complete 9-project inventory and **24 real troubleshooting cases** in [docs/RELATORIO-TECNICO.md](docs/RELATORIO-TECNICO.md) (Portuguese).
+
+---
+
+## Repository Contents
+
+```text
 linux/
-  healthcheck-host.sh          disco, memória, load, containers, systemd; texto/JSON; webhook
-  backup-postgres-docker.sh    pg_dump em container + validação + checksum + retenção + offsite
-  systemd/pg-backup.{service,timer}
-  docker/daemon.json           tira as bridges do Docker de 172.16.0.0/12 (+ README do caso)
+  healthcheck-host.sh               Disk, RAM, load, Docker containers & systemd checks (text/JSON + webhook)
+  backup-postgres-docker.sh         Containerized pg_dump + integrity verification + SHA-256 + retention + offsite sync
+  systemd/pg-backup.{service,timer} Systemd unit & timer templates for scheduled automated backups
+  docker/daemon.json                Shifts Docker bridges out of 172.16.0.0/12 to avoid VPN/branch subnet collisions
 templates/
-  docker-compose.yml           migrate one-shot -> app + worker, Postgres, healthchecks, TZ
-  nginx/mtls.conf              TLS para o painel + mTLS obrigatório para agentes (WebSocket)
+  docker-compose.yml                One-shot migration gate -> app + worker, Postgres, healthchecks, explicit TZ
+  nginx/mtls.conf                   TLS for web UI + mandatory client-certificate mTLS for WebSocket fleet agents
 windows/
-  Repair-FileAcl.ps1           recupera pasta/serviço com DACL vazia (tudo por SID)
-  Invoke-OutOfTreeTask.ps1     roda manutenção fora da árvore de processos de um serviço
-  HostWatcher.ps1              agente de observação com token DPAPI e auto-update assinado
-  Sign-Script.ps1              assina o agente (RSA-SHA256)
+  Repair-FileAcl.ps1                Language-agnostic SID-based recovery for folders/services hit by empty DACLs
+  Invoke-OutOfTreeTask.ps1          Detached maintenance runner executing outside the service process tree
+  HostWatcher.ps1                   Observation agent with DPAPI token storage and RSA-signed auto-updates
+  Sign-Script.ps1                   Offline RSA-3072 / SHA-256 signer for HostWatcher.ps1 auto-update payloads
 ```
 
-## Stack
+---
 
-**Linux:** Debian/Ubuntu, systemd, SSH, cron, Docker, Docker Compose, Nginx ·
-**Windows:** Server/10/11, Active Directory, NSSM, Agendador de Tarefas, WinRM, RDS, Defender, DPAPI, ACL/SID, Hyper-V ·
-**Virtualização:** VMware ESXi, Hyper-V ·
-**Rede:** MikroTik, UniFi, TLS/mTLS, WebSocket, DNS, SMB ·
-**Linguagens:** Bash, PowerShell, Python (FastAPI), TypeScript (Next.js, Prisma), SQL (SQL Server, PostgreSQL, SQLite, MySQL) ·
-**Operação:** GLPI, Kanboard, ClamAV, SMTP, monitoramento de backup, feeds de CVE (NVD, CISA KEV, EPSS)
+## Stack Coverage
 
-## Uso rápido
+- **Linux & Containers:** Debian/Ubuntu, `systemd` services & timers, hardened SSH, Docker, Docker Compose, Nginx TLS/mTLS reverse proxy
+- **Windows & Virtualization:** Windows Server / 10 / 11, Active Directory, NSSM, Task Scheduler, WinRM, RDS, Defender, DPAPI, SID-based ACLs, Hyper-V, VMware ESXi
+- **Networking & Security:** MikroTik, UniFi, TLS/mTLS, WebSockets, DNS, SMB, DKIM/SPF/DMARC, ClamAV, CVE feeds (NVD, CISA KEV, EPSS)
+- **Languages & Databases:** Bash, PowerShell, Python (FastAPI), TypeScript (Next.js, Prisma), SQL (SQL Server, PostgreSQL, SQLite, MySQL)
+
+---
+
+## Quick Start
+
+### Linux Host Healthcheck & Automated PostgreSQL Docker Backups
 
 ```bash
-# Linux
 sudo install -m 0755 linux/healthcheck-host.sh /usr/local/bin/
 IGNORE_EXITED_REGEX='-migrate-' healthcheck-host.sh --json
 
@@ -61,12 +72,27 @@ sudo install -m 0644 linux/systemd/pg-backup.* /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now pg-backup.timer
 ```
 
+### Windows Maintenance & Signed Agent Tooling (Elevated PowerShell)
+
 ```powershell
-# Windows (PowerShell elevado)
+# Preview SID-based ACL repair safely with -WhatIf
 .\windows\Repair-FileAcl.ps1 -Path 'C:\Program Files\SampleAgent' -ServiceName SampleAgent -WhatIf
+
+# Run maintenance script detached from a service's process tree
 .\windows\Invoke-OutOfTreeTask.ps1 -ScriptPath .\uninstall.ps1 -DelaySeconds 45
 ```
 
-## Licença
+---
 
-MIT
+## Automated CI Validation
+
+Every Pull Request and push is automatically checked across:
+- **`shellcheck`** (`ubuntu-latest`) for all Bash scripts in `linux/`
+- **`PSScriptAnalyzer`** (`windows-latest`) for all PowerShell scripts in `windows/`
+- **`docker compose config`** (`ubuntu-latest`) for deployment template validity in `templates/`
+
+---
+
+## License
+
+[MIT License](LICENSE) — Copyright (c) 2026 Gabriel Souza (`@gavicoding`).
