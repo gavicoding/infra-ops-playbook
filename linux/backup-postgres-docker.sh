@@ -23,7 +23,10 @@
 
 set -euo pipefail
 
-[[ -f /etc/default/pg-backup ]] && . /etc/default/pg-backup
+if [[ -f /etc/default/pg-backup ]]; then
+  # shellcheck source=/dev/null
+  . /etc/default/pg-backup
+fi
 
 PG_CONTAINER="${PG_CONTAINER:?defina PG_CONTAINER}"
 PG_USER="${PG_USER:-postgres}"
