@@ -94,7 +94,10 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
 fi
 
 # --- Saída ------------------------------------------------------------------
-label=$([[ $status -eq 0 ]] && echo OK || { [[ $status -eq 1 ]] && echo WARN || echo CRIT; })
+if   [[ $status -eq 0 ]]; then label="OK"
+elif [[ $status -eq 1 ]]; then label="WARN"
+else label="CRIT"
+fi
 
 if [[ "$OUTPUT" == "json" ]]; then
   printf '{"host":"%s","status":"%s","checked_at":"%s","findings":[' \
