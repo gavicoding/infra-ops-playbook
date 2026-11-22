@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# backup-postgres-docker.sh — dump lógico de um PostgreSQL que roda em container.
+# backup-postgres-docker.sh - dump lógico de um PostgreSQL que roda em container.
 #
 # - pg_dump em formato custom (-Fc), compactado, restaurável com pg_restore
 # - checksum SHA-256 ao lado de cada dump
 # - teste de integridade (pg_restore --list) antes de considerar o backup válido
 # - retenção local por dias
-# - cópia para FORA do host (rsync/ssh ou pasta montada) — backup no mesmo disco
+# - cópia para FORA do host (rsync/ssh ou pasta montada) - backup no mesmo disco
 #   do banco não é backup
 # - lock para não rodar duas vezes ao mesmo tempo
 #
