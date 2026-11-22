@@ -1,0 +1,11 @@
+# segredos e configs locais nunca vão para o repositório
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.sig
+token.bin
+config.json
+certs/

@@ -1,0 +1,12 @@
+{
+  "bip": "10.99.0.1/24",
+  "default-address-pools": [
+    { "base": "10.90.0.0/16", "size": 24 }
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "20m",
+    "max-file": "5"
+  },
+  "live-restore": true
+}

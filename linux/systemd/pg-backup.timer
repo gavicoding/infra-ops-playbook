@@ -1,0 +1,14 @@
+# /etc/systemd/system/pg-backup.timer
+# Ativar:  systemctl daemon-reload && systemctl enable --now pg-backup.timer
+# Conferir: systemctl list-timers pg-backup.timer ; journalctl -u pg-backup.service
+[Unit]
+Description=Agenda o backup do PostgreSQL (diario, 02:30)
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=15min
+# Se o host estava desligado no horário, roda ao ligar
+Persistent=true
+
+[Install]
+WantedBy=timers.target

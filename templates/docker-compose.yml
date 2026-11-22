@@ -1,0 +1,98 @@
+# Template: app web + worker em background + migração one-shot + Postgres + proxy TLS/mTLS
+#
+# Padrões aplicados:
+# - "migrate" roda uma vez e sai; app/worker só sobem depois que ele terminou OK
+#   (evita duas migrações concorrentes)
+# - imagem única com tag para os 3 serviços (todos usam o mesmo build)
+# - banco sem porta exposta (ou só em 127.0.0.1 para manutenção local)
+# - healthchecks reais, restart policy, TZ local, rotação de log
+# - segredos via --env-file (fora do git)
+#
+# Subir:  docker compose --env-file .env.prod up -d --build
+# Logs:   docker compose --env-file .env.prod logs -f app worker
+
+name: sample-app
+
+x-app-common: &app-common
+  image: sample-app:latest
+  pull_policy: never          # imagem local, construída pelo serviço "migrate"
+  env_file: .env.prod
+  environment:
+    TZ: America/Sao_Paulo
+    DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+  networks: [backend]
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      TZ: America/Sao_Paulo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # Só para manutenção local no host; remova se não precisar
+    ports:
+      - "127.0.0.1:15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [backend]
+
+  migrate:
+    <<: *app-common
+    build: .
+    command: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+    depends_on:
+      db: { condition: service_healthy }
+
+  app:
+    <<: *app-common
+    command: ["npm", "run", "start"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      # Node 18+ tem fetch nativo; não depende de curl/wget na imagem
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>r.json()).then(j=>process.exit(j.db==='ok'?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  worker:
+    <<: *app-common
+    command: ["npm", "run", "worker"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx/mtls.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro      # server.crt, server.key, client-ca.crt
+    depends_on:
+      app: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [backend]
+
+volumes:
+  db_data:
+
+networks:
+  backend:
+    # Faixa explícita, fora de 172.16.0.0/12 (ver linux/docker/README.md)
+    ipam:
+      config:
+        - subnet: 10.90.10.0/24
