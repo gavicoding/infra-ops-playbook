@@ -5,7 +5,7 @@
 > nomes genéricos (`app-server`, `edge-node`, `store-NN`, `erp-db`, `example.internal`).
 > Os números de escala são aproximados e servem só para dar uma ideia do tamanho.
 
-**Contexto do ambiente:** rede de varejo com ~80 filiais (`store-01..store-NN`), um
+**Contexto do ambiente:** operação com ~80 filiais (`site-01..site-NN`), um
 centro de distribuição (`dc-site`), um escritório central e ~400 estações Windows.
 Infra híbrida: um host Linux de homologação/apps internos (`app-server`), um segundo
 host Linux com containers de integração (`int-server`), hipervisores (VMware ESXi e
@@ -101,7 +101,7 @@ Começou como um monitor de filas de replicação entre a matriz e as filiais e 
 - **Pontos técnicos:**
   - Heurística com vários sinais: erro explícito, tempo desde a última conexão, idade do registro pendente mais antigo e tendência da fila. Separa *alta demanda* de *travada*.
   - **Limite aprendido** por filial e por fila (mediana dos picos diários de 14 dias × 1,3; o valor configurado vale como piso).
-  - **Perfil de venda por filial** (dia da semana × hora, 8 semanas) para saber se a loja deveria estar aberta, em vez de um horário comercial fixo.
+  - **Perfil de venda por filial** (dia da semana × hora, 8 semanas) para saber se a filial deveria estar aberta, em vez de um horário comercial fixo.
   - Alertas por e-mail + WhatsApp com **reenvio em lote global** (antes cada alerta reenviava no próprio relógio), silêncio das 22h às 6h, espera mínima de 10 min, aviso de "normalizado".
   - Aba de **infraestrutura**: mapa de dependências ("roda em"), causa raiz só quando a máquina está inalcançável, SSH só-leitura em servidores Linux (`docker ps -a`, `systemctl --failed`, `df`, `free`, `loadavg`) com senha cifrada e impressão digital pinada.
   - **Saúde do SQL Server** via DMVs (bloqueios, deadlocks/hora, esperas, discos, CPU, backups no `msdb`, jobs que deixaram de rodar), com a permissão `VIEW SERVER STATE` concedida no lugar de um papel mais amplo.
@@ -112,7 +112,7 @@ Começou como um monitor de filas de replicação entre a matriz e as filiais e 
 - **Resultado (antes → depois):**
   - Travas de replicação: descobertas pela reclamação da filial → detectadas em ~5 min (erro) ou dentro do limite configurado (trava silenciosa).
   - Volume de alerta: 80+ e-mails/dia → 1 resumo por ciclo, reenvio de hora em hora, sem alerta falso de madrugada.
-  - Dashboard: TTFB de 4,5–6,8 s → 0,05–0,1 s (85 queries por loja disparadas em paralelo substituídas por agregação).
+  - Dashboard: TTFB de 4,5–6,8 s → 0,05–0,1 s (85 queries por filial disparadas em paralelo substituídas por agregação).
 
 ### 2.4 Robô de retransmissão fiscal em contingência (✅)
 

@@ -9,7 +9,7 @@
 [![Nginx mTLS](https://img.shields.io/badge/Nginx-mTLS-009639.svg)](templates/nginx/mtls.conf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Hybrid infrastructure (**Linux + Windows/AD + Docker + Nginx mTLS**), observability, and operational automation playbook derived from a multi-branch retail environment (~80 branches, a distribution center, ~400 Windows workstations, central SQL Server ERP, automation bots, and open-source ITSM).
+Hybrid infrastructure (**Linux + Windows/AD + Docker + Nginx mTLS**), observability, and operational automation playbook derived from a real multi-site environment (~80 sites, a distribution center, ~400 Windows workstations, central SQL Server ERP, automation bots, and open-source ITSM).
 
 This repository curates **100% anonymized production case studies** (symptom → root cause → fix → measurable impact) alongside **reusable, linted scripts and deployment templates**. No real company names, IPs, domains, or credentials appear anywhere.
 

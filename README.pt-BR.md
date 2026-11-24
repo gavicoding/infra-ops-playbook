@@ -10,7 +10,7 @@
 [![Licença: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Infraestrutura híbrida (Linux + Windows/AD + Docker), observabilidade e automação
-operacional em um ambiente real de varejo multi-filial: ~80 filiais, um CD, ~400 estações,
+operacional em um ambiente real com várias unidades: ~80 filiais, um CD, ~400 estações,
 ERP com SQL Server central, robôs Windows e ITSM open source.
 
 Este repositório reúne **casos reais anonimizados** (problema → diagnóstico → correção →
