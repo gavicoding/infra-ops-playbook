@@ -9,9 +9,23 @@
 [![Nginx mTLS](https://img.shields.io/badge/Nginx-mTLS-009639.svg)](templates/nginx/mtls.conf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Hybrid infrastructure (**Linux + Windows/AD + Docker + Nginx mTLS**), observability, and operational automation playbook derived from a real multi-site environment (~80 sites, a distribution center, ~400 Windows workstations, central SQL Server ERP, automation bots, and open-source ITSM).
+Hybrid infrastructure (**Linux + Windows/AD + Docker + Nginx mTLS**), observability, and operational automation playbook derived from a real multi-site environment (~80 sites, ~400 Windows workstations, a central SQL Server business system, automation bots and an open-source help desk).
 
 This repository curates **100% anonymized production case studies** (symptom → root cause → fix → measurable impact) alongside **reusable, linted scripts and deployment templates**. No real company names, IPs, domains, or credentials appear anywhere.
+
+---
+
+## In plain words
+
+A Windows service that will not start even as SYSTEM, backups nobody checks, Docker networks clashing with the VPN, an agent that takes a minute to come back after a reboot: this is the day-to-day of whoever looks after a mixed Windows and Linux environment.
+
+Here are the scripts that fixed those problems and how each one was diagnosed.
+
+**What you gain**
+
+- **Ready scripts, checked automatically** (ShellCheck and PSScriptAnalyzer on every change).
+- **A preview mode** (`-WhatIf`) on the Windows scripts, to see what will change before it changes.
+- **24 real troubleshooting cases** with symptom, root cause, fix and result.
 
 ---
 
@@ -19,7 +33,7 @@ This repository curates **100% anonymized production case studies** (symptom →
 
 | Case | Before → After |
 | :--- | :--- |
-| **Replication & Infrastructure Observability Platform** | Stalled syncs discovered via store complaints → detected in **~5 min**; `80+` emails/day → hourly batched digests; dashboard TTFB **`6.8s → 0.1s`** |
+| **Replication & Infrastructure Observability Platform** | Stalled syncs discovered only when a site complained → detected in **~5 min**; `80+` emails/day → hourly batched digests; dashboard TTFB **`6.8s → 0.1s`** |
 | **Windows Fleet Agent + Central mTLS Control Plane** | Wave-based rollout with rollback & kill switch; post-restart fleet reconnection **`60s → 3–7s`** |
 | **Mass Windows Service Failures ("Access Denied" even for `SYSTEM`)** | Root cause: `icacls` inheritance flags applied to **files** yielded empty DACLs → self-healing recovery + clean out-of-tree reinstall (~40s downtime) |
 | **Fiscal Contingency Retransmission Automation** | Manual `3–4x/day` interventions → continuous RPA workflow with safety guardrails and automated vendor ticketing |
