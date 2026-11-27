@@ -4,7 +4,7 @@
 # - pg_dump em formato custom (-Fc), compactado, restaurável com pg_restore
 # - checksum SHA-256 ao lado de cada dump
 # - teste de integridade (pg_restore --list) antes de considerar o backup válido
-# - retenção local por dias
+# - retenção local por dias (pulada se algum dump da execução falhar)
 # - cópia para FORA do host (rsync/ssh ou pasta montada) - backup no mesmo disco
 #   do banco não é backup
 # - lock para não rodar duas vezes ao mesmo tempo
@@ -81,9 +81,15 @@ for db in $PG_DATABASES; do
   fi
 done
 
-# Retenção
-find "$dest" -type f \( -name '*.dump' -o -name '*.sha256' \) -mtime +"$RETENTION_DAYS" -print -delete \
-  | sed 's/^/  removido: /' || true
+# Retenção: só apaga dumps antigos quando todos os desta execução deram certo.
+# Sem essa trava, uma falha que dure mais que RETENTION_DAYS (container parado,
+# senha trocada) apagaria um a um os últimos backups bons até não sobrar nenhum.
+if (( failed )); then
+  log "retenção pulada: houve falha nesta execução, os dumps antigos foram mantidos"
+else
+  find "$dest" -type f \( -name '*.dump' -o -name '*.sha256' \) -mtime +"$RETENTION_DAYS" -print -delete \
+    | sed 's/^/  removido: /' || true
+fi
 
 # Cópia para fora do host
 if [[ -n "$OFFSITE_TARGET" ]]; then
